@@ -1,6 +1,8 @@
 library(netmeta)
 library(nmadb)
 library(dplyr)
+library(tidyr)
+library(ggplot2)
 
 dat_nmadb <- getNMADB()
 
@@ -37,6 +39,11 @@ source("compute_AIC.R")
 
 net <- runnetmeta(dat_nmadb$recid[ind])
 
+netgraph(net, plastic = FALSE, iterate=FALSE,
+         number.of.studies = TRUE, col="darkgray", cex=1.5, 
+         multiarm=FALSE, points=TRUE, col.points="black", 
+         cex.points=3, allfigures=TRUE)
+
 theta <- net$TE
 m <- net$m
 n <- net$n
@@ -50,18 +57,12 @@ logL_me <- -0.5*(m*log(2*pi)+
                    log(det(phi*V))+ 
                    t(theta-theta_me) %*% solve(phi*V) %*% (theta-theta_me))
 AIC_mul <- 2*n - 2*logL_me
-
-
 # Fixed Effect
 theta_fe <- net$TE.nma.fixed
 logL_fe <- -0.5*(m*log(2*pi)+
                    log(det(V))+ 
                    t(theta-theta_fe) %*% solve(V) %*% (theta-theta_fe))
-AIC_fixed <- 2*(n-1)-2*logL_fe
-
-
-
-
+AIC_fixed <- 2*n-2*logL_fe
 # Additive effects
 tau_hat <- net$tau
 sig <- V+tau_hat^2*diag(m)
@@ -74,13 +75,13 @@ AIC_add <- 2*n-2*logL_ae
 dat_nmadb[ind, ]
 phi
 tau_hat
-AIC_add-AIC_fixed
 
 AIC_mul-AIC_add
-AIC_mul-AIC_fixed
 
 net$Q.inconsistency
 net$Q.heterogeneity
+net$pval.Q.heterogeneity
+net$Q.decomp
 
 #------------Compare Observed TE with fitted TE----------------------------------------------------------
 # multiplicative d is the same as the fixed effects model
@@ -91,59 +92,49 @@ net$TE.nma.random-net$TE
 
 #---------Residual Plot------------------
 df_resid <- tibble(
-  comparison     = seq_along(net$TE),
-  ObsTE         = net$TE,
-  Additive       = net$TE.nma.random     - net$TE,
-  Multiplicative = net$TE.nma.fixed      - net$TE
+  comparison = seq_along(net$TE),
+  ObsTE = net$TE,
+  RE = net$TE.nma.random - net$TE,
+  ME = net$TE.nma.fixed - net$TE
 ) %>%
   pivot_longer(
-    cols      = c(Additive, Multiplicative),
-    names_to  = "model",
-    values_to = "residual"
-  )
+    cols      = c(RE, ME),
+    names_to  = "Model",
+    values_to = "Residual")
 
 
-ggplot(df_resid, aes(x = ObsTE, y = residual, color = model)) +
+ggplot(df_resid, aes(x = ObsTE, y = Residual, color = Model)) +
   geom_hline(yintercept = 0, linetype = "dashed") +
-  geom_point() +
-  labs(
-    x     = "Observed TE",
-    y     = "Fitted TE − Observed TE",
-    title = "Residual Plot"
-  ) +
+  geom_point(aes(shape = Model), size = 2, alpha = 0.8) +
+  labs(x = "Observed Treatment Effect", y = "Residual") +
   theme_minimal(base_size = 12)
 
 
 #----------TE & CI----------------------------------------------------
-d_mul <- net$TE.fixed[1, ]
-se_mul   <- sqrt(phi)*net$seTE.fixed[1, ]
-ci_mul_upper   <- d_mul + qnorm(0.975)*se_mul
-ci_mul_lower   <- d_mul + qnorm(0.025)*se_mul
+d_mul <- net$TE.fixed[1, -1]
+se_mul <- sqrt(phi)*net$seTE.fixed[1, -1]
+ci_mul_upper <- d_mul + qnorm(0.975)*se_mul
+ci_mul_lower <- d_mul + qnorm(0.025)*se_mul
 
-d_add <- net$TE.random[1, ]
-ci_add_lower  <- net$lower.random[1, ]
-ci_add_upper  <- net$upper.random[1, ]
-
+d_add <- net$TE.random[1,-1 ]
+ci_add_lower <- net$lower.random[1,-1 ]
+ci_add_upper <- net$upper.random[1,-1 ]
 
 df_plot <- data.frame(
-  treatment = factor(rep(1:length(d_mul), times = 2)),
-  model     = rep(c( "Multiplicative", "Random"), each = length(d_mul)),
+  treatment = factor(rep(2:(length(d_mul)+1), times = 2)),
+  model     = rep(c( "ME", "RE"), each = length(d_mul)),
   est  = c(d_mul, d_add),
   lo   = c(ci_mul_lower, ci_add_lower),
   hi   = c(ci_mul_upper, ci_add_upper)
 )
 
-ggplot(df_plot, aes(x = treatment, y = est, color = model)) +
-  geom_pointrange(aes(ymin = lo, ymax = hi),
-                  position = position_dodge(width = 0.6),
-                  size = 0.8) +
-  geom_hline(yintercept = 0, linetype = "dashed") +
-  labs(
-    x     = "Treatment",
-    y     = "TE",
-    color = "Model",
-    title = "TE Estimates"
-  ) +
+ggplot(df_plot, aes(y = treatment, x = est, color = model)) +
+  geom_pointrange(aes(xmin = lo, xmax = hi),
+                  position = position_dodge(width = 0.5),
+                  size = 0.1) +
+  geom_point(position = position_dodge(width = 0.5), 
+             size = 2, shape = 15, alpha = 0.5) +
+  labs(y = "Treatment", x = "Treatment Effect", color = "Model") +
   theme_minimal(base_size = 14)
 
 
