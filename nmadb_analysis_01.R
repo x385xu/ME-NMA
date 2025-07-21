@@ -38,6 +38,7 @@ source("compute_AIC.R")
 #ind <- AIC_rr$ind[which(AIC_rr$mul_add == min(AIC_rr$mul_add))]
 
 net <- runnetmeta(dat_nmadb$recid[ind])
+readByID(dat_nmadb$recid[ind])
 
 netgraph(net, plastic = FALSE, iterate=FALSE,
          number.of.studies = TRUE, col="darkgray", cex=1.5, 
@@ -120,23 +121,42 @@ d_add <- net$TE.random[1,-1 ]
 ci_add_lower <- net$lower.random[1,-1 ]
 ci_add_upper <- net$upper.random[1,-1 ]
 
+treatment <- c("Placebo", "MTX", "Abatacept+MTX", "Anakinra+MTX",
+               "aTNF+MTX", "aTNF", "Tocilizaumab+MTX", 
+               "Tocilizumab")
+
 df_plot <- data.frame(
-  treatment = factor(rep(2:(length(d_mul)+1), times = 2)),
+  treatment = rep(treatment[-1], 2),
   model     = rep(c( "ME", "RE"), each = length(d_mul)),
   est  = c(d_mul, d_add),
   lo   = c(ci_mul_lower, ci_add_lower),
   hi   = c(ci_mul_upper, ci_add_upper)
 )
 
+obs_df <- data.frame(
+  treatment = factor(rep("aTNF", 3), levels = treatment[-1]),
+  est       = c(16.60, 22.30, 49.81),
+  model     = "Observed"
+)
+
+all_models <- c("ME", "RE", "Observed")
+
 ggplot(df_plot, aes(y = treatment, x = est, color = model)) +
   geom_pointrange(aes(xmin = lo, xmax = hi),
-                  position = position_dodge(width = 0.5),
-                  size = 0.1) +
-  geom_point(position = position_dodge(width = 0.5), 
-             size = 2, shape = 15, alpha = 0.5) +
-  labs(y = "Treatment", x = "Treatment Effect", color = "Model") +
+                  position = position_dodge(width = 0.3),
+                  size = 0.2) +
+  geom_point(position = position_dodge(width = 0.3),
+             size = 2, shape = 15, alpha = 0.6) +
+  geom_point(data = obs_df,
+             aes(y = treatment, x = est, color = model),
+             #inherit.aes = FALSE,
+             shape = 18, size = 3) +
+  scale_color_manual(values = c("ME" = "#1b9e77", 
+                                "RE" = "#d95f02",
+                                "Observed" = "black"),
+                     breaks = all_models) +
+  labs(y = "", x  = "Treatment Effect", color = "") +
   theme_minimal(base_size = 14)
-
 
 
 #==========min(AIC_md$mul_add)= -32.60178 (MD)=======================
