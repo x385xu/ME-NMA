@@ -37,13 +37,37 @@ source("compute_AIC.R")
 #ind <- AIC_rr$ind[which(AIC_rr$mul_fixed == max(AIC_rr$mul_fixed))]
 #ind <- AIC_rr$ind[which(AIC_rr$mul_add == min(AIC_rr$mul_add))]
 
-net <- runnetmeta(dat_nmadb$recid[ind])
-readByID(dat_nmadb$recid[ind])
+ind <- AIC_md$ind[which(AIC_md$mul_add == min(AIC_md$mul_add))]
 
-netgraph(net, plastic = FALSE, iterate=FALSE,
-         number.of.studies = TRUE, col="darkgray", cex=1.5, 
-         multiarm=FALSE, points=TRUE, col.points="black", 
-         cex.points=3, allfigures=TRUE)
+net <- runnetmeta(dat_nmadb$recid[ind])
+read1 <- readByID(dat_nmadb$recid[ind])
+
+
+treatment <- c("Placebo", "MTX", "Abatacept+MTX", "Anakinra+MTX",
+               "aTNF+MTX", "aTNF", "Tocilizaumab+MTX", 
+               "Tocilizumab")
+
+
+netgraph(net,
+         labels = treatment,
+         plastic = FALSE, 
+         iterate=TRUE,
+         number.of.studies = TRUE, 
+         col="black", 
+         cex=1, 
+         multiarm=FALSE, 
+         points=TRUE, 
+         col.points="black", 
+         cex.points=2, 
+         cex.number.of.studies = 1,
+         offset = 0.03,
+         adj = matrix(c(0, -0.5, 0, 0.5, 1, -0.4, -0.1, -0.2, 
+                        0.5, 0.3, 0, -2, 1, 0.3, 0.3, 0.3),
+                      nrow = 8),
+         lwd = 2,
+#         srt.labels = -20,
+         rotate = 40
+)
 
 theta <- net$TE
 m <- net$m
@@ -58,12 +82,14 @@ logL_me <- -0.5*(m*log(2*pi)+
                    log(det(phi*V))+ 
                    t(theta-theta_me) %*% solve(phi*V) %*% (theta-theta_me))
 AIC_mul <- 2*n - 2*logL_me
+
 # Fixed Effect
-theta_fe <- net$TE.nma.fixed
-logL_fe <- -0.5*(m*log(2*pi)+
-                   log(det(V))+ 
-                   t(theta-theta_fe) %*% solve(V) %*% (theta-theta_fe))
-AIC_fixed <- 2*n-2*logL_fe
+# theta_fe <- net$TE.nma.fixed
+# logL_fe <- -0.5*(m*log(2*pi)+
+#                    log(det(V))+ 
+#                    t(theta-theta_fe) %*% solve(V) %*% (theta-theta_fe))
+# AIC_fixed <- 2*n-2*logL_fe
+
 # Additive effects
 tau_hat <- net$tau
 sig <- V+tau_hat^2*diag(m)
@@ -73,7 +99,7 @@ logL_ae <- -0.5*(m*log(2*pi)+
                    t(theta-theta_ae) %*% solve(sig) %*% (theta-theta_ae))
 AIC_add <- 2*n-2*logL_ae
 
-dat_nmadb[ind, ]
+
 phi
 tau_hat
 
@@ -83,6 +109,8 @@ net$Q.inconsistency
 net$Q.heterogeneity
 net$pval.Q.heterogeneity
 net$Q.decomp
+
+dat_nmadb[ind, ]
 
 #------------Compare Observed TE with fitted TE----------------------------------------------------------
 # multiplicative d is the same as the fixed effects model
@@ -121,17 +149,14 @@ d_add <- net$TE.random[1,-1 ]
 ci_add_lower <- net$lower.random[1,-1 ]
 ci_add_upper <- net$upper.random[1,-1 ]
 
-treatment <- c("Placebo", "MTX", "Abatacept+MTX", "Anakinra+MTX",
-               "aTNF+MTX", "aTNF", "Tocilizaumab+MTX", 
-               "Tocilizumab")
-
 df_plot <- data.frame(
   treatment = rep(treatment[-1], 2),
   model     = rep(c( "ME", "RE"), each = length(d_mul)),
   est  = c(d_mul, d_add),
   lo   = c(ci_mul_lower, ci_add_lower),
   hi   = c(ci_mul_upper, ci_add_upper)
-)
+) %>%
+  mutate(model = factor(model, levels = c("RE","ME")))
 
 obs_df <- data.frame(
   treatment = factor(rep("aTNF", 3), levels = treatment[-1]),
@@ -139,27 +164,66 @@ obs_df <- data.frame(
   model     = "Observed"
 )
 
-all_models <- c("ME", "RE", "Observed")
+all_models <- c("RE", "ME", "Observed")
 
 ggplot(df_plot, aes(y = treatment, x = est, color = model)) +
   geom_pointrange(aes(xmin = lo, xmax = hi),
-                  position = position_dodge(width = 0.3),
+                  position = position_dodge2(width = 0.3, reverse = TRUE),
                   size = 0.2) +
-  geom_point(position = position_dodge(width = 0.3),
+  geom_point(position = position_dodge2(width = 0.3, reverse = TRUE),
              size = 2, shape = 15, alpha = 0.6) +
   geom_point(data = obs_df,
              aes(y = treatment, x = est, color = model),
              #inherit.aes = FALSE,
              shape = 18, size = 3) +
-  scale_color_manual(values = c("ME" = "#1b9e77", 
+  scale_color_manual(values = c("ME" = "#1b9e77",
                                 "RE" = "#d95f02",
-                                "Observed" = "black"),
+                                "Observed" = "grey50"),
                      breaks = all_models) +
   labs(y = "", x  = "Treatment Effect", color = "") +
   theme_minimal(base_size = 14)
+#==============remove small study=======================
+
+net_data <- as.data.frame(cbind(net$treat1, net$treat2))
+colnames(net_data) <- c("treat1", "treat2")
+net_data$TE <- net$TE
+net_data$seTE <- net$seTE
+
+net_1 <- netmeta(TE, seTE, treat1, treat2, data = net_data[-10, ])
 
 
-#==========min(AIC_md$mul_add)= -32.60178 (MD)=======================
+theta <- net_1$TE
+m <- net_1$m
+n <- net_1$n
+V <- diag(net_1$seTE^2)
+
+# Multiplicative effect
+theta_me <- net_1$TE.nma.fixed # fitted TE
+phi <- as.numeric(t(theta-theta_me) %*% 
+                    solve(V) %*% (theta-theta_me) / (m-n+1))
+logL_me <- -0.5*(m*log(2*pi)+
+                   log(det(phi*V))+ 
+                   t(theta-theta_me) %*% solve(phi*V) %*% (theta-theta_me))
+AIC_mul <- 2*n - 2*logL_me
+
+# Additive effects
+tau_hat <- net_1$tau
+sig <- V+tau_hat^2*diag(m)
+theta_ae <- net_1$TE.nma.random
+logL_ae <- -0.5*(m*log(2*pi)+
+                   log(det(sig))+ 
+                   t(theta-theta_ae) %*% solve(sig) %*% (theta-theta_ae))
+AIC_add <- 2*n-2*logL_ae
+
+phi
+tau_hat
+
+AIC_mul-AIC_add
+
+net_1$Q.heterogeneity
+net_1$pval.Q.heterogeneity
+
+#======-32.60178 (MD) forest plot with estimates in original paper=======================
 readByID(480039)
 
 d_mul <- net$TE.fixed[1, ]
@@ -181,7 +245,7 @@ df_plot <- data.frame(
   est  = c(d_bayesian, d_mul, d_add),
   lo   = c(ci_bayesian_lower, ci_mul_lower, ci_add_lower),
   hi   = c(ci_bayesian_upper, ci_mul_upper, ci_add_upper)
-)
+) 
 
 ggplot(df_plot, aes(x = treatment, y = est, color = model)) +
   geom_pointrange(aes(ymin = lo, ymax = hi),

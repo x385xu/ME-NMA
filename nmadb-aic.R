@@ -4,6 +4,7 @@
 library(netmeta)
 
 # nmadb is removed from cran, can find it in the archive: https://cran.r-project.org/src/contrib/Archive/nmadb/?C=D;O=A
+# https://github.com/cran/nmadb
 #remove.packages("nmadb")
 #install.packages("nmadb_1.2.0.tar.gz", repos = NULL, type = "source")
 library(nmadb)
@@ -90,8 +91,8 @@ AIC_diff_md <- AIC_md$mul_add[which(AIC_md$Q_pval < 0.05)]
 df_AICplot <- bind_rows(
   tibble(value = AIC_diff_or, measure = "OR"),
   tibble(value = AIC_diff_rr, measure = "RR"),
-  tibble(value = AIC_diff_md, measure = "MD")
-)
+  tibble(value = AIC_diff_md, measure = "MD")) %>%
+  mutate(measure = factor(measure, levels = c("OR", "RR", "MD")))
 
 ggplot(df_AICplot, aes(x = value)) +
   geom_histogram(binwidth = 1, boundary = 0, color = "black", fill = "white") +
@@ -99,6 +100,18 @@ ggplot(df_AICplot, aes(x = value)) +
   facet_grid(.~measure, scales = "free") +
   labs(y = "Count", x="") +
   theme_minimal(base_size = 12)
+
+median(AIC_diff_or)
+median(AIC_diff_rr)
+median(AIC_diff_md)
+
+length(which(AIC_diff_or < 0))
+length(which(AIC_diff_rr < 0))
+length(which(AIC_diff_md < 0))
+
+length(AIC_diff_or)
+length(AIC_diff_rr)
+length(AIC_diff_md)
 
 # # build a data-frame with one row per observation
 # df <- bind_rows(
