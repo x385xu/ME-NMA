@@ -2,7 +2,7 @@ library(netmeta)
 library(nmadb)
 library(dplyr)
 
-# Compute AIC of datasets in nmadb given indices using
+#  Compute AIC of datasets in nmadb given indices using
 #   multiplicative and random/fixed effect models
 compute_AIC <- function(dat = dat_nmadb, ind) {
   len <- length(ind)
