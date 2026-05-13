@@ -41,6 +41,7 @@ analyse_case_study <- function(recid,
   
   recid <- as.character(recid)
   dat <- twoarm_data_list[[recid]]
+  
   net <- fit_netmeta(
     indata = dat,
     model = "random"
