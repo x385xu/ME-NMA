@@ -1,11 +1,11 @@
 #' @description
 #' Fit a network meta-analysis model using the \code{netmeta} package.
 #'
-#' This function is a lightweight replacement for the archived
-#' \code{nmadb::runnetmeta()} workflow. It fits common-effect or
-#' random-effects network meta-analysis models directly from locally
-#' saved NMA datasets without requiring repeated calls to the
-#' unmaintained \code{nmadb} package.
+#' Parts of this function adapt functionality and workflow ideas from the
+#' \code{nmadb} package (GPL-3 licensed), originally developed for fitting
+#' network meta-analysis models from the NMA database. This implementation
+#' was rewritten to operate on locally saved datasets and to avoid reliance
+#' on the archived and no-longer-maintained \code{nmadb} package API.
 #'
 #' The function supports binary, continuous, rate, and inverse-variance
 #' formatted datasets. Arm-based datasets are first converted to
@@ -45,6 +45,7 @@ fit_netmeta <- function(indata,
                         measure = NULL,
                         method.tau = "DL",
                         details.chkmultiarm = TRUE,
+                        control = NULL,
                         ...) {
   
   if (is.null(indata)) stop("`indata` is NULL.")
@@ -144,6 +145,7 @@ fit_netmeta <- function(indata,
       random = random_fit,
       method.tau = method.tau,
       details.chkmultiarm = details.chkmultiarm,
+      control = control,
       ...
     )
     
@@ -165,6 +167,7 @@ fit_netmeta <- function(indata,
     random = random_fit,
     method.tau = method.tau,
     details.chkmultiarm = details.chkmultiarm,
+    control = control,
     ...
   )
   

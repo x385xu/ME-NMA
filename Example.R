@@ -5,7 +5,10 @@ library(meta)
 library(netmeta)
 
 # Load one case-study dataset
-dat <- readRDS("nmadb_twoarm_data/nmadb_501212.rds")
+twoarm_data_list <- readRDS("nmadb_twoarm_data_all.rds")
+recid <-  as.character(501212)
+dat <- twoarm_data_list[[recid]]
+
 dat$type 
 
 # The outcome is binary, so the arm-based data must first be converted

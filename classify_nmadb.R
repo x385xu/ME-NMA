@@ -36,9 +36,11 @@ classify_nmadb <- function(dat = dat_nmadb) {
   )
   
   for (i in seq_len(nrow(dat))) {
+    recid_i <- dat_nmadb$recid[i]
+    dat_i <- readByID(recid_i)
     
     net <- tryCatch(
-      runnetmeta(dat$recid[i]),
+      fit_netmeta(dat_i),
       error = function(e) NULL
     )
     

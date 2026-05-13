@@ -7,8 +7,15 @@ library(scales)
 
 # 276, recid = 501235
 dat_nmadb[276,]
-net <- runnetmeta(501235)
-read <- readByID(501235)
+#net <- runnetmeta(501235)
+recid <- 501235
+recid <- as.character(recid)
+dat <- twoarm_data_list[[recid]]
+net <- fit_netmeta(
+  indata = dat,
+  model = "random"
+)
+#read <- readByID(501235)
 
 theta <- net$TE
 m <- net$m

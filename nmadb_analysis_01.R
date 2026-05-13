@@ -4,25 +4,12 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 
-dat_nmadb <- getNMADB()
-
-# Extract relevant info
-dat_nmadb <- dat_nmadb %>% 
-  select(Record.ID, Title, First.Author, Year, 
-         Number.of.Studies.., Number.of.Treatments, 
-         Type.of.Outcome., Effect.Measure, Fixed.effect.or.Random.effects.model,
-         Primary.Outcome, Description.of.the.outcome.s., 
-         Harmful.Beneficial.Outcome, dataset) %>%
-  rename(recid = Record.ID) %>%
-  mutate(Year = as.numeric(format(as.Date(Year, format="%Y-%m-%d"),"%Y")), 
-         .keep = "unused") 
-
 source("get_index_nmadb.R")
 source("compute_AIC.R")
 
 
 #=====================================================================
-
+dat_nmadb <- readRDS("dat_nmadb.rds")
 #59, recid=480039
 dat_nmadb[59, ]
 net <- runnetmeta(480039)

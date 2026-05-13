@@ -57,7 +57,7 @@ build_B_from_pairs <- function(dat) {
   return(B)
 }
 
-compute_AIC_multiarm <- function(dat = dat_nmadb, ind) {
+compute_AIC_multiarm <- function(dat = dat_nmadb, ind, method.tau = "DL") {
   len <- length(ind)
   AIC_re <- numeric(len)
   AIC_fe <- numeric(len)
@@ -66,6 +66,13 @@ compute_AIC_multiarm <- function(dat = dat_nmadb, ind) {
   phis <- numeric(len)
   Q <- numeric(len)
   Q_pval <- numeric(len)
+  I2 <- numeric(len)
+  I2_lower <- numeric(len)
+  I2_upper <- numeric(len)
+  Qh <- numeric(len)
+  Qh.pval <- numeric(len)
+  Qi <- numeric(len)
+  Qi.pval <- numeric(len)
   
   #computes log(det(A)) using cholesky decomposition
   logdet <- function(A) { R <- chol(A); 2*sum(log(diag(R))) }
@@ -127,7 +134,7 @@ compute_AIC_multiarm <- function(dat = dat_nmadb, ind) {
     net_data$TE <- net$TE
     net_data$seTE <- net$seTE
     
-    net_2 <- netmeta(TE, seTE, treat1, treat2, data = net_data, method.tau = "REML")
+    net_2 <- netmeta(TE, seTE, treat1, treat2, data = net_data, method.tau = method.tau)
     
     tau2 <- net_2$tau2
     # Using your dat_list (same ordering as y and V):
@@ -146,8 +153,16 @@ compute_AIC_multiarm <- function(dat = dat_nmadb, ind) {
     
     taus[j] <- net$tau
     phis[j] <- phi
-    Q[j] <- net$Q.heterogeneity
-    Q_pval[j] <- net$pval.Q.heterogeneity
+    Q[j] <- net$Q
+    Q_pval[j] <- net$pval.Q
+    I2[j] <- net$I2
+    I2_lower[j] <- net$lower.I2
+    I2_upper[j] <- net$upper.I2
+    Qh[j] <- net$Q.heterogeneity
+    Qh.pval[j] <- net$pval.Q.heterogeneity
+    Qi[j] <- net$Q.inconsistency
+    Qi.pval[j] <- net$pval.Q.inconsistency
+    
     
   }
   return(list(
@@ -161,7 +176,14 @@ compute_AIC_multiarm <- function(dat = dat_nmadb, ind) {
     me_re = AIC_me - AIC_re,
     me_fe = AIC_me - AIC_fe,
     Q = Q,
-    Q_pval = Q_pval
+    Q_pval = Q_pval,
+    Qh = Qh,
+    Qh_pval = Qh.pval,
+    Qi = Qi,
+    Qi_pval = Qi.pval,
+    I2 = I2,
+    I2_lower = I2_lower,
+    I2_upper = I2_upper
   ))
 }
 
