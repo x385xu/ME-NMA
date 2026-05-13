@@ -78,18 +78,32 @@ netgraph(
   offset = 0.06
 )
 
-# Estimated additive heterogeneity variance
+# -------------------------------------------------------------------------
+# Additive random-effects (RE) model
+# -------------------------------------------------------------------------
+
 tau_hat <- fit$tau
+
+# RE model estimates
+TE_RE <- fit$TE.random
+seTE_RE <- fit$seTE.random
+
+# -------------------------------------------------------------------------
+# Multiplicative heterogeneity (ME) model
+# -------------------------------------------------------------------------
 
 Q_total <- fit$Q
 df <- fit$df.Q
-# Estimate multiplicative heterogeneity
+
+# Estimate multiplicative heterogeneity parameter
 phi_hat <- max(1, Q_total / df)
 
-# The ME model uses the common-effect point estimates, but inflates the
-# within-study variances by a multiplicative factor phi.
+# The ME model uses the common-effect point estimates, while inflating
+# the within-study variances by the multiplicative factor phi.
 TE_ME <- fit$TE.common
 seTE_ME <- sqrt(phi_hat) * fit$seTE.common
+
+
 
 
 
