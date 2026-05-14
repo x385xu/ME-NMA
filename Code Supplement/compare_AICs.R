@@ -100,7 +100,7 @@ AIC_REML <- compute_AIC(twoarm_data_list,
                         measure = c("odds ratio", "risk ratio", "mean difference"),
                         twoarm_only = TRUE,
                         method.tau = "REML")
-# Appendix A.3 Figure 10: Plot the distribution of Delta AIC values under REML estimation.
+# Appendix A.4 Figure 10: Plot the distribution of Delta AIC values under REML estimation.
 p_REML <- make_AIC_histogram(AIC_REML)
 ggsave(
   filename = file.path("results", "AIC_REML_stack_interval.png"),
@@ -110,7 +110,7 @@ ggsave(
   dpi = 200
 )
 
-# Appendix A.3 Table 2: REML quantile summaries --------------------------------
+# Appendix A.4 Table 2: REML quantile summaries --------------------------------
 df_AIC_REML <- tibble::as_tibble(AIC_REML)
 quantile_tables_REML <- list(
   all = df_AIC_REML %>%

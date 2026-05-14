@@ -43,7 +43,7 @@ png(filename = file.path("results", "forest1.png"),
     width = 3200, height = 3500, res = 300)
 case1$forest()
 dev.off()
-# Appendix A.5 Table 3
+# Appendix A.6 Table 3
 options(tibble.print_max = Inf)
 case1$df_table
 
@@ -66,7 +66,7 @@ png(filename = file.path("results", "forest2.png"),
     width = 3200, height = 2500, res = 300)
 case2$forest()
 dev.off()
-# Appendix A.5 Table 4
+# Appendix A.6 Table 4
 case2$df_table
 
 ## Case study 3: Biological Therapies Versus Placebo or Standard Care for ACR70 Improvement
@@ -88,7 +88,7 @@ png(filename = file.path("results", "forest3.png"),
     width = 3200, height = 3500, res = 300)
 case3$forest()
 dev.off()
-# Appendix A.5 Table 5
+# Appendix A.6 Table 5
 case3$df_table
 
 ## Case study 4: Novel Oral Anticoagulants for Atrial Fibrillation
@@ -109,6 +109,6 @@ png(filename = file.path("results", "forest4.png"),
     width = 3200, height = 2000, res = 300)
 case4$forest()
 dev.off()
-# Appendix A.5 Table 6
+# Appendix A.6 Table 6
 case4$df_table
 
