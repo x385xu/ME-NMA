@@ -1,7 +1,5 @@
-
 # install.packages("remotes") 
 # remotes::install_version("nmadb", version = "1.2.0")
-# install.packages("nmadb") 
 library(nmadb)
 # install.packages("netmeta") 
 library(netmeta)
@@ -40,8 +38,6 @@ idx_twoarm <- idx_nmadb %>%
       "mean difference"
     )
   )
-
-# Create folder
 
 # Read and save datasets
 # NOTE: This step may take several minutes to run

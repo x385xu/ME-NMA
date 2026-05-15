@@ -17,15 +17,45 @@ library(dplyr)
 library(metafor)
 source("functions/fit_netmeta.R")
 source("functions/analyse_case_study.R")
-
-twoarm_data_list <- readRDS("data/nmadb_twoarm_data_all.rds")
+source("functions/fit_ME_UME_AIC.R")
+source("functions/fit_rct_subset_results.R")
 
 # Create results folder if it does not already exist
 if (!dir.exists("results")) {
   dir.create("results")
 }
 
+twoarm_data_list <- readRDS("data/nmadb_twoarm_data_all.rds")
+load("df_AIC_DL.RData")
+
+# Select the four case studies and relabel them
+case_study_results <- df_AIC_DL %>%
+  filter(recid %in% c(501330, 501235, 473552, 501212)) %>%
+  mutate(
+    case_study = case_when(
+      recid == 501330 ~ "Case Study 1",
+      recid == 501235 ~ "Case Study 2",
+      recid == 473552 ~ "Case Study 3",
+      recid == 501212 ~ "Case Study 4"
+    ),
+    case_study = factor(
+      case_study,
+      levels = c("Case Study 1", "Case Study 2", 
+                 "Case Study 3", "Case Study 4"
+      )
+    )
+  ) %>%
+  arrange(case_study) %>%
+  select(case_study, recid, effect_measure, tau2, phi,
+         AIC_re, AIC_me, Q, Q_pval, Qh, Qh_pval, Qi, Qi_pval
+  )
+# Key statistics about the four case studies 
+options(pillar.sigfig = 5)
+print(case_study_results, n = Inf, width = Inf)
+
+## ----------------------------------------------------------------------------
 ## Case study 1: Topical NSAIDs Versus Placebo for Pain Relief
+## ----------------------------------------------------------------------------
 case1 <- analyse_case_study(
   recid = 501330,
   treatment = c("Placebo", "Ketoprofen",
@@ -47,7 +77,10 @@ dev.off()
 options(tibble.print_max = Inf)
 case1$df_table
 
-## Case study 2: Interventions to Increase Household Possession of a Functioning Smoke Alarm
+## ----------------------------------------------------------------------------
+## Case study 2: Interventions to Increase Household Possession of a Functioning 
+## Smoke Alarm
+## ----------------------------------------------------------------------------
 case2 <- analyse_case_study(
   recid = 501235,
   treatment = c("Usual Care", "Education",
@@ -69,7 +102,25 @@ dev.off()
 # Appendix A.6 Table 4
 case2$df_table
 
-## Case study 3: Biological Therapies Versus Placebo or Standard Care for ACR70 Improvement
+# Remove non-RCTs and refit the model to access heterogeneity
+rct <- c(1,0,1,0,0,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1) # Indicator of RCTs
+rct_only_results <- fit_rct_subset_results(
+  recid = 501235,
+  twoarm_data_list = twoarm_data_list,
+  rct = rct
+)
+print(rct_only_results, n = Inf, width = Inf)
+
+# Fit UME model and compute its AIC
+fit_ME_UME_AIC(fit_netmeta(
+  indata = twoarm_data_list[[as.character(501235)]],
+  model  = "random"
+))$AIC
+
+## ----------------------------------------------------------------------------
+## Case study 3: Biological Therapies Versus Placebo or Standard Care for ACR70 
+## Improvement  
+## ----------------------------------------------------------------------------
 case3 <- analyse_case_study(
   recid = 473552,
   treatment = c("Placebo/Standard Care", "Abatacept",
@@ -91,7 +142,9 @@ dev.off()
 # Appendix A.6 Table 5
 case3$df_table
 
-## Case study 4: Novel Oral Anticoagulants for Atrial Fibrillation
+## ----------------------------------------------------------------------------
+## Case study 4: Novel Oral Anticoagulants for Atrial Fibrillation 
+## ----------------------------------------------------------------------------
 case4 <- analyse_case_study(
   recid = 501212,
   treatment = c("Control", "Apixaban",

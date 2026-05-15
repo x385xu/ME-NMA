@@ -23,7 +23,7 @@
 #'   If \code{FALSE}, only networks containing multi-arm studies
 #'   are included.
 #' @param method.tau Character string specifying the estimator used
-#'   for the between-study standard deviation \eqn{\tau} in
+#'   for the between-study variance \eqn{\tau^2} in
 #'   \code{netmeta}. Defaults to \code{"DL"}.
 #'
 #' @return A list containing:
@@ -31,8 +31,8 @@
 #'   \item \code{index}: Indices of the analyzed networks.
 #'   \item \code{recid}: Record IDs of the analyzed networks.
 #'   \item \code{effect_measure}: Effect measure for each network.
-#'   \item \code{tau}: Estimated between-study heterogeneity
-#'     standard deviation.
+#'   \item \code{tau2}: Estimated between-study heterogeneity
+#'     variance.
 #'   \item \code{phi}: Estimated multiplicative variance inflation
 #'     factor.
 #'   \item \code{AIC_re}: AIC under the additive random-effects model.
@@ -114,8 +114,8 @@ compute_AIC <- function(twoarm_data_list,
     AIC_me[j] <- 2 * n - 2 * logL_me
     
     # Compute AIC for RE model
-    tau_hat <- net_fit$tau
-    Sigma_re <- V + tau_hat^2 * diag(m)
+    tau_hat2 <- net_fit$tau2
+    Sigma_re <- V + tau_hat2 * diag(m)
     theta_re <- net_fit$TE.nma.random
     
     logL_re <- -0.5 * (
@@ -134,7 +134,7 @@ compute_AIC <- function(twoarm_data_list,
     AIC_ce[j] <- 2 * n - 2 * logL_ce
     
     
-    taus[j] <- tau_hat
+    taus[j] <- tau_hat2
     phis[j] <- phi_hat
     
     Q[j] <- net_fit$Q
@@ -155,7 +155,7 @@ compute_AIC <- function(twoarm_data_list,
     index = idx,
     recid = idx_use$recid,
     effect_measure = idx_use$effect_measure,
-    tau = taus,
+    tau2 = taus,
     phi = phis,
     AIC_re = AIC_re,
     AIC_ce = AIC_ce,

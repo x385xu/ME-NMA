@@ -54,6 +54,7 @@ ggsave(
 
 # Appendix A.3 Table 1: DL quantile summaries ----------------------------------
 df_AIC_DL <- tibble::as_tibble(AIC_DL)
+save(df_AIC_DL, file = "df_AIC_DL.RData")
 # Create quantile summaries under different inclusion criteria.
 quantile_tables_DL <- list(
   all = df_AIC_DL %>%
