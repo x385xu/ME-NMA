@@ -17,20 +17,18 @@ if (!dir.exists("data")) {
 dat_nmadb <- getNMADB()
 
 dat_nmadb <- dat_nmadb %>%
-  select(Record.ID, Title, First.Author, Year,
-         Number.of.Studies.., Number.of.Treatments,
-         Type.of.Outcome., Effect.Measure, Fixed.effect.or.Random.effects.model,
-         Primary.Outcome, Description.of.the.outcome.s.,
-         Harmful.Beneficial.Outcome, dataset) %>%
-  rename(recid = Record.ID) %>%
-  mutate(Year = as.numeric(format(as.Date(Year, format="%Y-%m-%d"),"%Y")),
-         .keep = "unused")
+  select(Record.ID, Effect.Measure) %>%
+  rename(recid = Record.ID)
 
-saveRDS(dat_nmadb, "data/dat_nmadb.rds")
+saveRDS(dat_nmadb, file.path("data/dat_nmadb.rds"))
 
-# NOTE: This step may take several minutes to run
+# Note: Download failed for multiple nmadb datasets.
+# These failures occurred inside readByID(), because some records
+# could not be retrieved from the external database or the exported
+# .xlsx files were empty/corrupted. Failed records were skipped.
+# NOTE: This step takes about 30 minutes to run
 idx_nmadb <- classify_nmadb(dat = dat_nmadb)
-save(idx_nmadb, file = "data/idx_nmadb.RData")
+save(idx_nmadb, file = file.path("data/idx_nmadb.RData"))
 
 # Keep only two-arm networks with OR, RR, or MD
 idx_twoarm <- idx_nmadb %>%
@@ -44,7 +42,7 @@ idx_twoarm <- idx_nmadb %>%
   )
 
 # Read and save datasets
-# NOTE: This step may take several minutes to run
+# NOTE: This step takes about 5 minutes to run
 twoarm_data_list <- map(idx_twoarm$recid, function(id) {
   readByID(id)
 })
@@ -53,9 +51,7 @@ twoarm_data_list <- map(idx_twoarm$recid, function(id) {
 names(twoarm_data_list) <- idx_twoarm$recid
 
 # Save combined object as a single .rds file
-
-
 saveRDS(
   twoarm_data_list,
-  file = "data/nmadb_twoarm_data_all.rds"
+  file = file.path("data/nmadb_twoarm_data_all.rds")
 )

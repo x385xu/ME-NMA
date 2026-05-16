@@ -6,7 +6,7 @@
 ## -------------------------------------------------------------------------
 # install.packages("netmeta") 
 library(netmeta)
-source("functions/fit_netmeta.R")
+source(file.path("functions/fit_netmeta.R"))
 
 ## Load network
 twoarm_data_list <- readRDS("data/nmadb_twoarm_data_all.rds")

@@ -25,8 +25,8 @@ if (!dir.exists("results")) {
   dir.create("results")
 }
 
-twoarm_data_list <- readRDS("data/nmadb_twoarm_data_all.rds")
-load("df_AIC_DL.RData")
+twoarm_data_list <- readRDS(file.path("data/nmadb_twoarm_data_all.rds"))
+load(file.path("data", "df_AIC_DL.RData"))
 
 # Select the four case studies and relabel them
 case_study_results <- df_AIC_DL %>%
@@ -73,10 +73,15 @@ png(filename = file.path("results", "forest1.png"),
     width = 3200, height = 3500, res = 300)
 case1$forest()
 dev.off()
-# Appendix A.6 Table 3
+# Appendix A.6 Table A3
 options(tibble.print_max = Inf)
 case1$df_table
-
+xtable::print.xtable(
+  xtable::xtable(
+    as.data.frame(case1$df_table),
+    digits = c(0, 0, 0, 4, 4, 4)
+  ), include.rownames = FALSE
+)
 ## ----------------------------------------------------------------------------
 ## Case study 2: Interventions to Increase Household Possession of a Functioning 
 ## Smoke Alarm
@@ -99,8 +104,14 @@ png(filename = file.path("results", "forest2.png"),
     width = 3200, height = 2500, res = 300)
 case2$forest()
 dev.off()
-# Appendix A.6 Table 4
+# Appendix A.6 Table A4
 case2$df_table
+xtable::print.xtable(
+  xtable::xtable(
+    as.data.frame(case2$df_table),
+    digits = c(0, 0, 0, 4, 4, 4)
+  ), include.rownames = FALSE
+)
 
 # Remove non-RCTs and refit the model to access heterogeneity
 rct <- c(1,0,1,0,0,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1) # Indicator of RCTs
@@ -139,9 +150,14 @@ png(filename = file.path("results", "forest3.png"),
     width = 3200, height = 3500, res = 300)
 case3$forest()
 dev.off()
-# Appendix A.6 Table 5
+# Appendix A.6 Table A5
 case3$df_table
-
+xtable::print.xtable(
+  xtable::xtable(
+    as.data.frame(case3$df_table),
+    digits = c(0, 0, 0, 4, 4, 4)
+  ), include.rownames = FALSE
+)
 ## ----------------------------------------------------------------------------
 ## Case study 4: Novel Oral Anticoagulants for Atrial Fibrillation 
 ## ----------------------------------------------------------------------------
@@ -162,6 +178,11 @@ png(filename = file.path("results", "forest4.png"),
     width = 3200, height = 2000, res = 300)
 case4$forest()
 dev.off()
-# Appendix A.6 Table 6
+# Appendix A.6 Table A6
 case4$df_table
-
+xtable::print.xtable(
+  xtable::xtable(
+    as.data.frame(case4$df_table),
+    digits = c(0, 0, 0, 4, 4, 4)
+  ), include.rownames = FALSE
+)

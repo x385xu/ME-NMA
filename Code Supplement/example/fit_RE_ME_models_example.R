@@ -5,7 +5,7 @@ library(meta)
 library(netmeta)
 
 # Load case study 2 dataset
-twoarm_data_list <- readRDS("data/nmadb_twoarm_data_all.rds")
+twoarm_data_list <- readRDS(file.path("data/nmadb_twoarm_data_all.rds"))
 recid <-  as.character(501235)
 dat <- twoarm_data_list[[recid]]
 
@@ -25,9 +25,6 @@ pw <- meta::pairwise(
   sm = dat$effect,
   allstudies = TRUE
 )
-
-unique(pw$treat1)
-unique(pw$treat2)
 
 # Replace numeric treatment codes by descriptive treatment names.
 

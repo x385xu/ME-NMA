@@ -41,6 +41,7 @@ analyse_case_study <- function(recid,
   
   recid <- as.character(recid)
   dat <- twoarm_data_list[[recid]]
+  effect <- dat$effect
   
   net <- fit_netmeta(
     indata = dat,
@@ -233,7 +234,7 @@ analyse_case_study <- function(recid,
   
   ref_treatment <- treatment[1]
   if (is.null(xlab)) {
-    xlab <- paste0("Log-OR (vs. ", ref_treatment, ")")
+    xlab <- paste0("Log-",effect, " (vs. ", ref_treatment, ")")
   }
   
   ## -----------------------------
